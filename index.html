@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة تحليل صور whitehat#9995</title>
+
+    <!-- EXIF.js library for metadata extraction -->
+    <script src="https://cdn.jsdelivr.net/npm/exif-js@2.3.0/exif.min.js">
+    </script>
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #0d0d0d;
+            --bg-card: #111111;
+            --bg-card-hover: #161616;
+            --green-neon: #00ff41;
+            --green-bright: #39ff14;
+            --green-muted: #00c853;
+            --green-dark: #003d1a;
+            --green-glow: rgba(0, 255, 65, 0.3);
+            --green-glow-strong: rgba(0, 255, 65, 0.6);
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-muted: #777777;
+            --border-color: #1a1a1a;
+            --border-glow: #00ff4133;
+            --red-accent: #ff1744;
+            --orange-accent: #ff9100;
+            --blue-accent: #448aff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Tajawal', 'Cairo', Tahoma, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Background grid pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% {
+                background-position: 0 0, 0 0;
+            }
+            100% {
+                background-position: 40px 40px, 40px 40px;
+            }
+        }
+
+        /* Floating particles */
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--green-neon);
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+            opacity: 0;
+            box-shadow: 0 0 6px var(--green-glow), 0 0 12px var(--green-glow);
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.2;
+            }
+            100% {
+                transform: translateY(-10vh) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        /* Main wrapper */
+        .main-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .header-icon {
+            font-size: 56px;
+            display: block;
+            margin-bottom: 8px;
+            animation: pulseIcon 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px var(--green-glow-strong));
+        }
+
+        @keyframes pulseIcon {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.12);
+            }
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--green-neon), var(--green-bright), #00e676);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+            text-shadow: none;
+            filter: drop-shadow(0 0 25px var(--green-glow));
+        }
+
+        .header .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 4px;
+            letter-spacing: 2px;
+            font-weight: 400;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: var(--green-dark);
+            color: var(--green-neon);
+            padding: 5px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 8px;
+            letter-spacing: 1.5px;
+            border: 1px solid var(--border-glow);
+            animation: glowBadge 3s ease-in-out infinite;
+        }
+
+        @keyframes glowBadge {
+            0%,
+            100% {
+                box-shadow: 0 0 8px var(--green-glow), inset 0 0 8px rgba(0, 255, 65, 0.05);
+            }
+            50% {
+                box-shadow: 0 0 22px var(--green-glow-strong), inset 0 0 14px rgba(0, 255, 65, 0.1);
+            }
+        }
+
+        /* Upload Card */
+        .upload-card {
+            background: var(--bg-card);
+            border: 2px dashed var(--border-color);
+            border-radius: 20px;
+            padding: 40px 30px;
+            width: 100%;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 255, 65, 0.04), transparent, rgba(0, 255, 65, 0.04), transparent);
+            animation: rotateBorder 6s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes rotateBorder {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .upload-card:hover {
+            border-color: var(--green-neon);
+            box-shadow: 0 0 40px var(--green-glow), 0 0 80px rgba(0, 255, 65, 0.1), inset 0 0 30px rgba(0, 255, 65, 0.03);
+            transform: translateY(-3px);
+            border-style: solid;
+        }
+
+        .upload-card.drag-over {
+            border-color: var(--green-bright) !important;
+            box-shadow: 0 0 60px var(--green-glow-strong), 0 0 120px rgba(0, 255, 65, 0.2), inset 0 0 40px rgba(0, 255, 65, 0.06) !important;
+            background: var(--bg-card-hover) !important;
+            transform: scale(1.02) !important;
+            border-style: solid !important;
+        }
+
+        .upload-card-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            display: block;
+            margin-bottom: 12px;
+            transition: transform 0.3s;
+        }
+
+        .upload-card:hover .upload-icon {
+            transform: translateY(-6px);
+        }
+
+        .upload-card h3 {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .upload-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .upload-card .supported-formats {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .format-tag {
+            background: var(--bg-secondary);
+            color: var(--green-muted);
+            padding: 4px 12px;
+            border-radius: 14px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        /* Hidden file input */
+        #fileInput {
+            display: none;
+        }
+
+        /* Preview Section */
+        .preview-section {
+            width: 100%;
+            display: none;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .preview-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-image-container {
+            flex-shrink: 0;
+            width: 200px;
+            height: 200px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .preview-image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        .preview-quick-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .preview-quick-info h4 {
+            color: var(--green-neon);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .quick-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .quick-info-row span:last-child {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Results Cards */
+        .results-container {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .results-container.active {
+            display: flex;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 22px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card:hover {
+            border-color: var(--border-glow);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.06);
+        }
+
+        .result-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--green-neon);
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 0 10px var(--green-glow);
+        }
+
+        .result-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .result-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--green-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .result-card-header h4 {
+            color: var(--green-neon);
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .result-card-header .card-count {
+            margin-right: auto;
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .result-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.85rem;
+            vertical-align: top;
+        }
+
+        .result-table td:first-child {
+            color: var(--text-muted);
+            font-weight: 500;
+            white-space: nowrap;
+            width: 35%;
+            font-size: 0.8rem;
+            letter-spacing: 0.3px;
+        }
+
+        .result-table td:last-child {
+            color: var(--text-primary);
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .result-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .value-highlight {
+            color: var(--green-bright) !important;
+            font-weight: 700 !important;
+        }
+
+        .value-warning {
+            color: var(--orange-accent) !important;
+        }
+
+        .gps-link {
+            color: var(--blue-accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .gps-link:hover {
+            color: var(--green-bright);
+            text-decoration: underline;
+        }
+
+        /* Loading spinner */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--green-neon);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            box-shadow: 0 0 20px var(--green-glow);
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .loading-text {
+            color: var(--green-neon);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Reset button */
+        .reset-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 10px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            letter-spacing: 0.5px;
+            font-family: inherit;
+        }
+        .reset-btn:hover {
+            border-color: var(--green-neon);
+            color: var(--green-neon);
+            box-shadow: 0 0 20px var(--green-glow);
+            background: rgba(0, 255, 65, 0.04);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+        .footer .dev-name {
+            color: var(--green-neon);
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+        }
+        .footer .dot {
+            color: var(--green-muted);
+            margin: 0 6px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-card);
+            border: 1px solid var(--red-accent);
+            color: #ff5252;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            z-index: 200;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(255, 23, 68, 0.2);
+            font-size: 0.85rem;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            .upload-card {
+                padding: 25px 16px;
+            }
+            .upload-icon {
+                font-size: 46px;
+            }
+            .preview-image-container {
+                width: 120px;
+                height: 120px;
+            }
+            .preview-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .result-table td:first-child {
+                width: 45%;
+                font-size: 0.7rem;
+            }
+            .result-table td:last-child {
+                font-size: 0.75rem;
+            }
+            .result-card {
+                padding: 14px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating particles -->
+    <div class="particles-container" id="particlesContainer"></div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <span class="loading-text">جاري تحليل الصورة...</span>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Header -->
+        <div class="header">
+            <span class="header-icon">🔍</span>
+            <h1>أداة تحليل صور whitehat#9995</h1>
+            <p class="subtitle">EXIF & METADATA ANALYZER</p>
+            <span class="badge">🛡️ WHITEHAT TOOL</span>
+        </div>
+
+        <!-- Upload Card -->
+        <div class="upload-card" id="uploadCard" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-card-inner">
+                <span class="upload-icon">📤</span>
+                <h3>اسحب الصورة هنا أو اضغط للرفع</h3>
+                <p>قم بإسقاط أي صورة لتحليل بياناتها الوصفية بالكامل</p>
+                <div class="supported-formats">
+                    <span class="format-tag">JPG</span>
+                    <span class="format-tag">JPEG</span>
+                    <span class="format-tag">PNG</span>
+                    <span class="format-tag">TIFF</span>
+                    <span class="format-tag">WEBP</span>
+                    <span class="format-tag">HEIC</span>
+                </div>
+            </div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection">
+            <div class="preview-card">
+                <div class="preview-image-container" id="previewImageContainer">
+                    <img id="previewImage" src="" alt="معاينة الصورة">
+                </div>
+                <div class="preview-quick-info" id="quickInfo">
+                    <h4>📋 معلومات سريعة</h4>
+                    <div id="quickInfoContent">
+                        <p style="color:#777;">بانتظار التحليل...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Container -->
+        <div class="results-container" id="resultsContainer"></div>
+
+        <!-- Reset Button -->
+        <button class="reset-btn" id="resetBtn" style="display:none;" onclick="resetAll()">🔄 تحليل صورة جديدة</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <span>© 2024 <span class="dot">•</span> تم التطوير بواسطة <span class="dev-name">soel</span> <span class="dot">•</span> جميع الحقوق محفوظة</span>
+    </div>
+
+    <script>
+        // ==================== PARTICLES ====================
+        function createParticles() {
+            const container = document.getElementById('particlesContainer');
+            const count = 35;
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 12 + 8) + 's';
+                particle.style.animationDelay = (Math.random() * 10) + 's';
+                particle.style.width = (Math.random() * 3 + 1) + 'px';
+                particle.style.height = particle.style.width;
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // ==================== DOM ELEMENTS ====================
+        const fileInput = document.getElementById('fileInput');
+        const uploadCard = document.getElementById('uploadCard');
+        const previewSection = document.getElementById('previewSection');
+        const previewImage = document.getElementById('previewImage');
+        const quickInfoContent = document.getElementById('quickInfoContent');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resetBtn = document.getElementById('resetBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const toast = document.getElementById('toast');
+
+        // ==================== DRAG & DROP ====================
+        uploadCard.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadCard.classList.add('drag-over');
+        });
+
+        uploadCard.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadCard.classList.remove('drag-over');
+        });
+
+        uploadCard.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadCard.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        });
+
+        // ==================== FILE SELECT ====================
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        // ==================== PROCESS FILE ====================
+        function processFile(file) {
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/tiff', 'image/webp', 'image/heic',
+                'image/heif'
+            ];
+            if (!file.type.startsWith('image/')) {
+                showToast('⚠️ الرجاء اختيار ملف صورة صالح');
+                return;
+            }
+
+            // Show loading
+            loadingOverlay.classList.add('active');
+
+            // Read file for preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgDataUrl = e.target.result;
+                previewImage.src = imgDataUrl;
+
+                // Extract EXIF data
+                extractEXIF(file, imgDataUrl);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ==================== EXTRACT EXIF ====================
+        function extractEXIF(file, imgDataUrl) {
+            // Use EXIF.js to read metadata
+            EXIF.getData(file, function() {
+                const exifData = {};
+                const allMeta = EXIF.getAllTags(this);
+
+                // Map EXIF tags to readable format
+                exifData.make = EXIF.getTag(this, 'Make') || null;
+                exifData.model = EXIF.getTag(this, 'Model') || null;
+                exifData.software = EXIF.getTag(this, 'Software') || null;
+                exifData.dateTime = EXIF.getTag(this, 'DateTime') || null;
+                exifData.dateTimeOriginal = EXIF.getTag(this, 'DateTimeOriginal') || null;
+                exifData.dateTimeDigitized = EXIF.getTag(this, 'DateTimeDigitized') || null;
+                exifData.gpsLatitude = EXIF.getTag(this, 'GPSLatitude') || null;
+                exifData.gpsLongitude = EXIF.getTag(this, 'GPSLongitude') || null;
+                exifData.gpsLatitudeRef = EXIF.getTag(this, 'GPSLatitudeRef') || null;
+                exifData.gpsLongitudeRef = EXIF.getTag(this, 'GPSLongitudeRef') || null;
+                exifData.gpsAltitude = EXIF.getTag(this, 'GPSAltitude') || null;
+                exifData.gpsDateStamp = EXIF.getTag(this, 'GPSDateStamp') || null;
+                exifData.imageWidth = EXIF.getTag(this, 'ImageWidth') || EXIF.getTag(this, 'ExifImageWidth') ||
+                    null;
+                exifData.imageHeight = EXIF.getTag(this, 'ImageHeight') || EXIF.getTag(this, 'ExifImageHeight') ||
+                    null;
+                exifData.orientation = EXIF.getTag(this, 'Orientation') || null;
+                exifData.xResolution = EXIF.getTag(this, 'XResolution') || null;
+                exifData.yResolution = EXIF.getTag(this, 'YResolution') || null;
+                exifData.resolutionUnit = EXIF.getTag(this, 'ResolutionUnit') || null;
+                exifData.flash = EXIF.getTag(this, 'Flash') || null;
+                exifData.fNumber = EXIF.getTag(this, 'FNumber') || null;
+                exifData.exposureTime = EXIF.getTag(this, 'ExposureTime') || null;
+                exifData.isoSpeedRatings = EXIF.getTag(this, 'ISOSpeedRatings') || null;
+                exifData.focalLength = EXIF.getTag(this, 'FocalLength') || null;
+                exifData.whiteBalance = EXIF.getTag(this, 'WhiteBalance') || null;
+                exifData.meteringMode = EXIF.getTag(this, 'MeteringMode') || null;
+                exifData.exposureProgram = EXIF.getTag(this, 'ExposureProgram') || null;
+                exifData.colorSpace = EXIF.getTag(this, 'ColorSpace') || null;
+                exifData.copyright = EXIF.getTag(this, 'Copyright') || null;
+                exifData.artist = EXIF.getTag(this, 'Artist') || null;
+                exifData.lensMake = EXIF.getTag(this, 'LensMake') || null;
+                exifData.lensModel = EXIF.getTag(this, 'LensModel') || null;
+                exifData.compression = EXIF.getTag(this, 'Compression') || null;
+                exifData.thumbnailLength = EXIF.getTag(this, 'ThumbnailLength') || null;
+
+                // Build complete EXIF object for any additional tags
+                exifData.allTags = allMeta;
+
+                // Also get image dimensions from the img element
+                const img = new Image();
+                img.onload = function() {
+                    exifData.realWidth = img.naturalWidth;
+                    exifData.realHeight = img.naturalHeight;
+                    buildResults(file, exifData, imgDataUrl);
+                    loadingOverlay.classList.remove('active');
+                };
+                img.onerror = function() {
+                    exifData.realWidth = exifData.imageWidth;
+                    exifData.realHeight = exifData.imageHeight;
+                    buildResults(file, exifData, imgDataUrl);
+                    loadingOverlay.classList.remove('active');
+                };
+                img.src = imgDataUrl;
+            });
+
+            // Fallback: if EXIF fails or takes too long, still show basic file info
+            setTimeout(() => {
+                if (loadingOverlay.classList.contains('active')) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const fallbackData = {
+                            make: null,
+                            model: null,
+                            software: null,
+                            dateTime: null,
+                            dateTimeOriginal: null,
+                            dateTimeDigitized: null,
+                            gpsLatitude: null,
+                            gpsLongitude: null,
+                            gpsLatitudeRef: null,
+                            gpsLongitudeRef: null,
+                            gpsAltitude: null,
+                            gpsDateStamp: null,
+                            imageWidth: img.naturalWidth,
+                            imageHeight: img.naturalHeight,
+                            realWidth: img.naturalWidth,
+                            realHeight: img.naturalHeight,
+                            orientation: null,
+                            xResolution: null,
+                            yResolution: null,
+                            resolutionUnit: null,
+                            flash: null,
+                            fNumber: null,
+                            exposureTime: null,
+                            isoSpeedRatings: null,
+                            focalLength: null,
+                            whiteBalance: null,
+                            meteringMode: null,
+                            exposureProgram: null,
+                            colorSpace: null,
+                            copyright: null,
+                            artist: null,
+                            lensMake: null,
+                            lensModel: null,
+                            compression: null,
+                            thumbnailLength: null,
+                            allTags: {}
+                        };
+                        buildResults(file, fallbackData, imgDataUrl);
+                        loadingOverlay.classList.remove('active');
+                    };
+                    img.src = imgDataUrl;
+                }
+            }, 4000);
+        }
+
+        // ==================== BUILD RESULTS ====================
+        function buildResults(file, exifData, imgDataUrl) {
+            // Show preview section
+            previewSection.classList.add('active');
+            resetBtn.style.display = 'inline-block';
+
+            // Build quick info
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            const fileSizeKB = (file.size / 1024).toFixed(1);
+            const sizeDisplay = file.size > 1024 * 1024 ? fileSizeMB + ' MB' : fileSizeKB + ' KB';
+
+            const dimensions = exifData.realWidth && exifData.realHeight ?
+                `${exifData.realWidth} × ${exifData.realHeight} px` :
+                (exifData.imageWidth && exifData.imageHeight ? `${exifData.imageWidth} × ${exifData.imageHeight} px` :
+                    'غير معروف');
+
+            let quickHTML = `
+                <div class="quick-info-row"><span>📁 اسم الملف</span><span>${file.name}</span></div>
+                <div class="quick-info-row"><span>📐 الأبعاد</span><span>${dimensions}</span></div>
+                <div class="quick-info-row"><span>💾 الحجم</span><span>${sizeDisplay}</span></div>
+                <div class="quick-info-row"><span>📋 النوع</span><span>${file.type || 'غير معروف'}</span></div>
+                <div class="quick-info-row"><span>🕐 آخر تعديل</span><span>${new Date(file.lastModified).toLocaleString('ar-SA')}</span></div>
+            `;
+            quickInfoContent.innerHTML = quickHTML;
+
+            // Build detailed result cards
+            let cardsHTML = '';
+
+            // Card 1: 📱 Device & Camera Info
+            const hasDeviceInfo = exifData.make || exifData.model || exifData.lensMake || exifData.lensModel ||
+                exifData.software;
+            if (hasDeviceInfo) {
+                cardsHTML += `
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <div class="result-card-icon">📱</div>
+                        <h4>معلومات الجهاز والكاميرا</h4>
+                        <span class="card-count">Device Info</span>
+                    </div>
+                    <table class="result-table">
+                        ${exifData.make ? `<tr><td>🏭 الشركة المصنعة</td><td class="value-highlight">${exifData.make}</td></tr>` : ''}
+                        ${exifData.model ? `<tr><td>📷 الموديل</td><td class="value-highlight">${exifData.model}</td></tr>` : ''}
+                        ${exifData.lensMake ? `<tr><td>🔭 مصنع العدسة</td><td>${exifData.lensMake}</td></tr>` : ''}
+                        ${exifData.lensModel ? `<tr><td>🔬 موديل العدسة</td><td>${exifData.lensModel}</td></tr>` : ''}
+                        ${exifData.software ? `<tr><td>💿 البرنامج</td><td>${exifData.software}</td></tr>` : ''}
+                    </table>
+                </div>`;
+            }
+
+            // Card 2: 📅 Date & Time Info
+            const hasDateInfo = exifData.dateTime || exifData.dateTimeOriginal || exifData.dateTimeDigitized ||
+                exifData.gpsDateStamp;
+            if (hasDateInfo) {
+                cardsHTML += `
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <div class="result-card-icon">📅</div>
+                        <h4>التواريخ والأوقات</h4>
+                        <span class="card-count">Timestamps</span>
+                    </div>
+                    <table class="result-table">
+                        ${exifData.dateTime ? `<tr><td>🕐 تاريخ التعديل</td><td class="value-highlight">${exifData.dateTime}</td></tr>` : ''}
+                        ${exifData.dateTimeOriginal ? `<tr><td>📸 تاريخ الالتقاط الأصلي</td><td class="value-highlight">${exifData.dateTimeOriginal}</td></tr>` : ''}
+                        ${exifData.dateTimeDigitized ? `<tr><td>💾 تاريخ الرقمنة</td><td>${exifData.dateTimeDigitized}</td></tr>` : ''}
+                        ${exifData.gpsDateStamp ? `<tr><td>🛰️ تاريخ GPS</td><td>${exifData.gpsDateStamp}</td></tr>` : ''}
+                    </table>
+                </div>`;
+            }
+
+            // Card 3: 📍 GPS Location
+            const hasGPS = exifData.gpsLatitude && exifData.gpsLongitude;
+            if (hasGPS) {
+                const lat = convertGPSToDecimal(exifData.gpsLatitude, exifData.gpsLatitudeRef);
+                const lon = convertGPSToDecimal(exifData.gpsLongitude, exifData.gpsLongitudeRef);
+                const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+                const latDisplay = typeof lat === 'number' ? lat.toFixed(6) + '° ' + (exifData.gpsLatitudeRef ||
+                    '') : formatGPSArray(exifData.gpsLatitude) + ' ' + (exifData.gpsLatitudeRef || '');
+                const lonDisplay = typeof lon === 'number' ? lon.toFixed(6) + '° ' + (exifData.gpsLongitudeRef ||
+                    '') : formatGPSArray(exifData.gpsLongitude) + ' ' + (exifData.gpsLongitudeRef || '');
+
+                cardsHTML += `
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <div class="result-card-icon">📍</div>
+                        <h4>الموقع الجغرافي GPS</h4>
+                        <span class="card-count">Location</span>
+                    </div>
+                    <table class="result-table">
+                        <tr><td>🌐 خط العرض</td><td class="value-highlight">${latDisplay}</td></tr>
+                        <tr><td>🌐 خط الطول</td><td class="value-highlight">${lonDisplay}</td></tr>
+                        ${exifData.gpsAltitude ? `<tr><td>⛰️ الارتفاع</td><td>${exifData.gpsAltitude} متر</td></tr>` : ''}
+                        ${exifData.gpsDateStamp ? `<tr><td>🛰️ تاريخ GPS</td><td>${exifData.gpsDateStamp}</td></tr>` : ''}
+                        <tr><td>🗺️ الرابط</td><td><a href="${googleMapsUrl}" target="_blank" class="gps-link">🔗 فتح في خرائط Google</a></td></tr>
+                    </table>
+                </div>`;
+            }
+
+            // Card 4: ⚙️ Camera Settings
+            const hasCameraSettings = exifData.fNumber || exifData.exposureTime || exifData.isoSpeedRatings || exifData
+                .focalLength || exifData.flash !== null || exifData.whiteBalance !== null || exifData.meteringMode !==
+                null;
+            if (hasCameraSettings) {
+                cardsHTML += `
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <div class="result-card-icon">⚙️</div>
+                        <h4>إعدادات الكاميرا</h4>
+                        <span class="card-count">Settings</span>
+                    </div>
+                    <table class="result-table">
+                        ${exifData.fNumber ? `<tr><td>🔆 فتحة العدسة (F)</td><td class="value-highlight">f/${exifData.fNumber}</td></tr>` : ''}
+                        ${exifData.exposureTime ? `<tr><td>⏱️ سرعة الغالق</td><td>${formatExposure(exifData.exposureTime)}</td></tr>` : ''}
+                        ${exifData.isoSpeedRatings ? `<tr><td>💡 ISO</td><td class="value-highlight">${exifData.isoSpeedRatings}</td></tr>` : ''}
+                        ${exifData.focalLength ? `<tr><td>🔭 البعد البؤري</td><td>${exifData.focalLength} مم</td></tr>` : ''}
+                        ${exifData.flash !== null && exifData.flash !== undefined ? `<tr><td>⚡ الفلاش</td><td>${getFlashText(exifData.flash)}</td></tr>` : ''}
+                        ${exifData.whiteBalance !== null && exifData.whiteBalance !== undefined ? `<tr><td>🎨 توازن اللون الأبيض</td><td>${getWhiteBalanceText(exifData.whiteBalance)}</td></tr>` : ''}
+                        ${exifData.meteringMode !== null && exifData.meteringMode !== undefined ? `<tr><td>📊 وضع القياس</td><td>${getMeteringModeText(exifData.meteringMode)}</td></tr>` : ''}
+                        ${exifData.exposureProgram !== null && exifData.exposureProgram !== undefined ? `<tr><td>📋 برنامج التعريض</td><td>${getExposureProgramText(exifData.exposureProgram)}</td></tr>` : ''}
+                    </table>
+                </div>`;
+            }
+
+            // Card 5: 🖼️ Image Technical Details
+            cardsHTML += `
+            <div class="result-card">
+                <div class="result-card-header">
+                    <div class="result-card-icon">🖼️</div>
+                    <h4>التفاصيل التقنية للصورة</h4>
+                    <span class="card-count">Technical</span>
+                </div>
+                <table class="result-table">
+                    <tr><td>📐 الأبعاد</td><td class="value-highlight">${dimensions}</td></tr>
+                    ${exifData.orientation ? `<tr><td>🔄 الاتجاه</td><td>${getOrientationText(exifData.orientation)}</td></tr>` : ''}
+                    ${exifData.xResolution ? `<tr><td>📏 الدقة الأفقية</td><td>${exifData.xResolution} ${getResolutionUnitText(exifData.resolutionUnit)}</td></tr>` : ''}
+                    ${exifData.yResolution ? `<tr><td>📏 الدقة العمودية</td><td>${exifData.yResolution} ${getResolutionUnitText(exifData.resolutionUnit)}</td></tr>` : ''}
+                    ${exifData.colorSpace ? `<tr><td>🎨 فضاء الألوان</td><td>${getColorSpaceText(exifData.colorSpace)}</td></tr>` : ''}
+                    ${exifData.compression ? `<tr><td>🗜️ الضغط</td><td>${getCompressionText(exifData.compression)}</td></tr>` : ''}
+                    <tr><td>💾 الحجم</td><td>${sizeDisplay} (${file.size.toLocaleString()} بايت)</td></tr>
+                    <tr><td>📋 نوع MIME</td><td>${file.type || 'غير معروف'}</td></tr>
+                    ${exifData.thumbnailLength ? `<tr><td>🖼️ حجم الصورة المصغرة</td><td>${(exifData.thumbnailLength / 1024).toFixed(1)} KB</td></tr>` : ''}
+                </table>
+            </div>`;
+
+            // Card 6: 👤 Author & Copyright
+            const hasAuthorInfo = exifData.artist || exifData.copyright;
+            if (hasAuthorInfo) {
+                cardsHTML += `
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <div class="result-card-icon">👤</div>
+                        <h4>الملكية والحقوق</h4>
+                        <span class="card-count">Copyright</span>
+                    </div>
+                    <table class="result-table">
+                        ${exifData.artist ? `<tr><td>🎨 المصور/الفنان</td><td class="value-highlight">${exifData.artist}</td></tr>` : ''}
+                        ${exifData.copyright ? `<tr><td>©️ حقوق النشر</td><td class="value-warning">${exifData.copyright}</td></tr>` : ''}
+                    </table>
+                </div>`;
+            }
+
+            // Card 7: 📊 All EXIF Tags (if there are additional tags)
+            const allTagKeys = Object.keys(exifData.allTags || {});
+            const knownKeys = ['Make', 'Model', 'Software', 'DateTime', 'DateTimeOriginal', 'DateTimeDigitized',
+                'GPSLatitude', 'GPSLongitude', 'GPSLatitudeRef', 'GPSLongitudeRef', 'GPSAltitude', 'GPSDateStamp',
+                'ImageWidth', 'ImageHeight', 'ExifImageWidth', 'ExifImageHeight', 'Orientation', 'XResolution',
+                'YResolution', 'ResolutionUnit', 'Flash', 'FNumber', 'ExposureTime', 'ISOSpeedRatings',
+                'FocalLength', 'WhiteBalance', 'MeteringMode', 'ExposureProgram', 'ColorSpace', 'Copyright',
+                'Artist', 'LensMake', 'LensModel', 'Compression', 'ThumbnailLength'
+            ];
+            const extraTags = allTagKeys.filter(k => !knownKeys.includes(k) && exifData.allTags[k] !== undefined &&
+                exifData.allTags[k] !== null && typeof exifData.allTags[k] !== 'object');
+            if (extraTags.length > 0) {
+                cardsHTML += `
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <div class="result-card-icon">📊</div>
+                        <h4>بيانات EXIF إضافية</h4>
+                        <span class="card-count">${extraTags.length} Tags</span>
+                    </div>
+                    <table class="result-table">
+                        ${extraTags.slice(0, 15).map(tag => `<tr><td>🏷️ ${tag}</td><td>${exifData.allTags[tag]}</td></tr>`).join('')}
+                        ${extraTags.length > 15 ? `<tr><td colspan="2" style="text-align:center;color:#777;">... و ${extraTags.length - 15} بيانات إضافية أخرى</td></tr>` : ''}
+                    </table>
+                </div>`;
+            }
+
+            // If no EXIF data at all
+            if (!hasDeviceInfo && !hasDateInfo && !hasGPS && !hasCameraSettings && !hasAuthorInfo && extraTags.length ===
+                0) {
+                cardsHTML += `
+                <div class="result-card">
+                    <div class="result-card-header">
+                        <div class="result-card-icon">ℹ️</div>
+                        <h4>ملاحظة</h4>
+                    </div>
+                    <table class="result-table">
+                        <tr><td colspan="2" style="text-align:center;color:#ff9100;">⚠️ لا توجد بيانات EXIF مضمنة في هذه الصورة. قد تكون البيانات الوصفية قد أُزيلت أو أن تنسيق الصورة لا يدعمها.</td></tr>
+                    </table>
+                </div>`;
+            }
+
+            resultsContainer.innerHTML = cardsHTML;
+            resultsContainer.classList.add('active');
+
+            // Scroll to results
+            setTimeout(() => {
+                resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 200);
+        }
+
+        // ==================== HELPER FUNCTIONS ====================
+        function convertGPSToDecimal(gpsArray, ref) {
+            if (!gpsArray || gpsArray.length < 3) return null;
+            let decimal = gpsArray[0] + gpsArray[1] / 60 + gpsArray[2] / 3600;
+            if (ref === 'S' || ref === 'W') decimal = -decimal;
+            return decimal;
+        }
+
+        function formatGPSArray(arr) {
+            if (!arr || arr.length < 3) return 'غير معروف';
+            return `${arr[0]}° ${arr[1]}' ${arr[2].toFixed(2)}"`;
+        }
+
+        function formatExposure(exposureTime) {
+            if (!exposureTime) return 'غير معروف';
+            if (exposureTime >= 1) return exposureTime + ' ثانية';
+            return `1/${Math.round(1 / exposureTime)} ثانية`;
+        }
+
+        function getFlashText(flash) {
+            const flashMap = {
+                0: '🔴 بدون فلاش',
+                1: '⚡ فلاش',
+                5: '⚡ فلاش (بدون عودة)',
+                7: '⚡ فلاش (عودة)',
+                9: '⚡ فلاش إجباري',
+                13: '⚡ فلاش إجباري (بدون عودة)',
+                15: '⚡ فلاش إجباري (عودة)',
+                16: '🔴 فلاش ممنوع',
+                24: '🔴 فلاش تلقائي ممنوع',
+                25: '⚡ فلاش تلقائي',
+                31: '⚡ فلاش تلقائي (عودة)',
+                65: '🔴 إضاءة حمراء',
+                73: '⚡ فلاش + إضاءة حمراء',
+                77: '⚡ فلاش + إضاءة حمراء (عودة)',
+                89: '⚡ فلاش تلقائي + إضاءة حمراء',
+                93: '⚡ فلاش تلقائي + إضاءة حمراء (عودة)',
+            };
+            return flashMap[flash] || `وضع ${flash}`;
+        }
+
+        function getWhiteBalanceText(wb) {
+            return wb === 0 ? '⚪ تلقائي' : wb === 1 ? '☀️ يدوي' : `وضع ${wb}`;
+        }
+
+        function getMeteringModeText(mm) {
+            const map = { 0: 'غير معروف', 1: '📊 متوسط', 2: '🎯 منتصف المركز', 3: '📍 نقطة', 4: '🔲 متعدد النقاط', 5: '📐 نمطي',
+                6: 'جزئي', 255: 'آخر' };
+            return map[mm] || `وضع ${mm}`;
+        }
+
+        function getExposureProgramText(ep) {
+            const map = { 0: 'غير محدد', 1: '👤 يدوي', 2: '⚙️ عادي', 3: '🔆 أولوية فتحة العدسة', 4: '⏱️ أولوية الغالق',
+                5: '🎨 إبداعي', 6: '🏃 حركة', 7: '🌄 منظر طبيعي', 8: '📷 صورة شخصية' };
+            return map[ep] || `برنامج ${ep}`;
+        }
+
+        function getOrientationText(orientation) {
+            const map = { 1: 'عادي', 2: 'معكوس أفقياً', 3: 'مقلوب 180°', 4: 'معكوس عمودياً', 5: 'تدوير 90° معكوس',
+                6: 'تدوير 90°', 7: 'تدوير 270° معكوس', 8: 'تدوير 270°' };
+            return map[orientation] || `اتجاه ${orientation}`;
+        }
+
+        function getResolutionUnitText(unit) {
+            const map = { 2: 'DPI (بوصة)', 3: 'DPC (سم)', 1: 'بدون وحدة' };
+            return map[unit] || '';
+        }
+
+        function getColorSpaceText(cs) {
+            return cs === 1 ? 'sRGB' : cs === 2 ? 'Adobe RGB' : cs === 65535 ? 'غير معاير' : `فضاء ${cs}`;
+        }
+
+        function getCompressionText(comp) {
+            const map = { 1: 'غير مضغوط', 6: 'JPEG', 7: 'JPEG', 32773: 'PackBits' };
+            return map[comp] || `نوع ${comp}`;
+        }
+
+        // ==================== TOAST ====================
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ==================== RESET ====================
+        function resetAll() {
+            previewSection.classList.remove('active');
+            resultsContainer.classList.remove('active');
+            resultsContainer.innerHTML = '';
+            quickInfoContent.innerHTML = '<p style="color:#777;">بانتظار التحليل...</p>';
+            previewImage.src = '';
+            resetBtn.style.display = 'none';
+            fileInput.value = '';
+            uploadCard.style.display = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==================== INIT ====================
+        console.log('%c🛡️ أداة تحليل صور whitehat#9995 %c| %cتم التطوير بواسطة soel',
+            'color:#00ff41;font-size:16px;font-weight:bold;',
+            '',
+            'color:#39ff14;font-weight:bold;');
+        console.log('%c🔍 EXIF & Metadata Analyzer - Whitehat Tool',
+            'color:#00c853;font-size:12px;');
+    </script>
+</body>
+</html>
